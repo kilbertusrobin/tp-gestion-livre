@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.books.domain.usecase.BookUseCaseTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-07-01T08:07:15" hostname="PC_PORTABLE_ROB" time="4.67">
+  <properties/>
+  <testcase name="crée et sauvegarde un livre avec titre et auteur valides" classname="com.example.books.domain.usecase.BookUseCaseTest" time="1.095"/>
+  <testcase name="lève une exception si le titre est vide" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.007"/>
+  <testcase name="lève une exception si le titre ne contient que des espaces" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.002"/>
+  <testcase name="lève une exception si l'auteur est vide" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.005"/>
+  <testcase name="lève une exception si l'auteur ne contient que des espaces" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.002"/>
+  <testcase name="retire les espaces de bord du titre et de l'auteur" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.003"/>
+  <testcase name="retourne une liste vide quand aucun livre n'est stocké" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.446"/>
+  <testcase name="retourne un seul livre" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.059"/>
+  <testcase name="retourne la liste triée par titre (ordre alphabétique)" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.013"/>
+  <testcase name="retourne la liste triée quand les livres sont déjà stockés dans l'ordre" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.012"/>
+  <testcase name="la liste retournée contient exactement tous les éléments stockés" classname="com.example.books.domain.usecase.BookUseCaseTest" time="1.518"/>
+  <testcase name="la liste retournée est triée par titre" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.485"/>
+  <testcase name="addBook avec titre et auteur non vides sauvegarde toujours le livre" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.692"/>
+  <testcase name="addBook avec titre vide lève toujours IllegalArgumentException" classname="com.example.books.domain.usecase.BookUseCaseTest" time="0.181"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
