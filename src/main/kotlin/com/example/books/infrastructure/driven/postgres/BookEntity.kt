@@ -1,6 +1,7 @@
 package com.example.books.infrastructure.driven.postgres
 
 import com.example.books.domain.model.Book
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -15,10 +16,13 @@ class BookEntity(
     val id: Long? = null,
     val title: String,
     val author: String,
+    @Column(nullable = false)
+    val reserved: Boolean = false,
 ) {
-    fun toDomain(): Book = Book(title, author)
+    fun toDomain(): Book = Book(id = id, title = title, author = author, reserved = reserved)
 
     companion object {
-        fun fromDomain(book: Book): BookEntity = BookEntity(title = book.title, author = book.author)
+        fun fromDomain(book: Book): BookEntity =
+            BookEntity(id = book.id, title = book.title, author = book.author, reserved = book.reserved)
     }
 }

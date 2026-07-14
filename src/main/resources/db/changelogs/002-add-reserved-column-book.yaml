@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-add-reserved-column-book
+      author: robin.kilbertus
+      changes:
+        - addColumn:
+            tableName: book
+            columns:
+              - column:
+                  name: reserved
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

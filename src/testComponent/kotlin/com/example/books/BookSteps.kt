@@ -15,7 +15,7 @@ class BookSteps(
     @LocalServerPort
     private var port: Int = 0
 
-    private lateinit var lastResponseBody: String
+    private var lastBookId: Long = 0
 
     init {
         Given("aucun livre n'est enregistré") {
@@ -29,6 +29,16 @@ class BookSteps(
                 String::class.java,
             )
             assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+            lastBookId = Regex("\"id\":(\\d+)").find(response.body.orEmpty())!!.groupValues[1].toLong()
+        }
+
+        When("je réserve ce livre") {
+            val response = restTemplate.postForEntity(
+                "http://localhost:$port/books/$lastBookId/reserve",
+                null,
+                String::class.java,
+            )
+            assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         }
 
         Then("la liste des livres contient {string} de {string}") { title: String, author: String ->
@@ -38,9 +48,25 @@ class BookSteps(
 
         Then("la liste des livres est triée par titre") {
             val response = restTemplate.getForEntity("http://localhost:$port/books", String::class.java)
-            lastResponseBody = response.body.orEmpty()
-            val titles = Regex("\"title\":\"([^\"]*)\"").findAll(lastResponseBody).map { it.groupValues[1] }.toList()
+            val titles = Regex("\"title\":\"([^\"]*)\"")
+                .findAll(response.body.orEmpty())
+                .map { it.groupValues[1] }
+                .toList()
             assertThat(titles).isEqualTo(titles.sorted())
+        }
+
+        Then("ce livre n'est plus disponible dans la liste") {
+            val book = bookRepository.findById(lastBookId)
+            assertThat(book?.reserved).isTrue()
+        }
+
+        Then("la réservation de ce livre échoue avec le statut {int}") { expectedStatus: Int ->
+            val response = restTemplate.postForEntity(
+                "http://localhost:$port/books/$lastBookId/reserve",
+                null,
+                String::class.java,
+            )
+            assertThat(response.statusCode.value()).isEqualTo(expectedStatus)
         }
     }
 }

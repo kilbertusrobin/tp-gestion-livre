@@ -35,12 +35,12 @@ class BookUseCaseTest : DescribeSpec({
 
             it("crée et sauvegarde un livre avec titre et auteur valides") {
                 val slot = slot<Book>()
-                every { repository.save(capture(slot)) } returns Unit
+                every { repository.save(capture(slot)) } answers { firstArg<Book>().copy(id = 1L) }
 
                 val book = useCase.addBook("Clean Code", "Robert C. Martin")
 
-                book shouldBe Book("Clean Code", "Robert C. Martin")
-                slot.captured shouldBe Book("Clean Code", "Robert C. Martin")
+                book shouldBe Book(id = 1L, title = "Clean Code", author = "Robert C. Martin")
+                slot.captured shouldBe Book(title = "Clean Code", author = "Robert C. Martin")
                 verify(exactly = 1) { repository.save(any()) }
             }
 
@@ -72,11 +72,11 @@ class BookUseCaseTest : DescribeSpec({
 
             it("retire les espaces de bord du titre et de l'auteur") {
                 val slot = slot<Book>()
-                every { repository.save(capture(slot)) } returns Unit
+                every { repository.save(capture(slot)) } answers { firstArg<Book>().copy(id = 1L) }
 
                 useCase.addBook("  Clean Code  ", "  Robert C. Martin  ")
 
-                slot.captured shouldBe Book("Clean Code", "Robert C. Martin")
+                slot.captured shouldBe Book(title = "Clean Code", author = "Robert C. Martin")
             }
         }
 
@@ -90,7 +90,7 @@ class BookUseCaseTest : DescribeSpec({
             }
 
             it("retourne un seul livre") {
-                val book = Book("Refactoring", "Martin Fowler")
+                val book = Book(id = 1L, title = "Refactoring", author = "Martin Fowler")
                 every { repository.findAll() } returns listOf(book)
 
                 useCase.getAllBooks() shouldContainExactly listOf(book)
@@ -98,28 +98,62 @@ class BookUseCaseTest : DescribeSpec({
 
             it("retourne la liste triée par titre (ordre alphabétique)") {
                 val books = listOf(
-                    Book("Refactoring", "Martin Fowler"),
-                    Book("Clean Code", "Robert C. Martin"),
-                    Book("The Pragmatic Programmer", "Andrew Hunt"),
+                    Book(id = 1L, title = "Refactoring", author = "Martin Fowler"),
+                    Book(id = 2L, title = "Clean Code", author = "Robert C. Martin"),
+                    Book(id = 3L, title = "The Pragmatic Programmer", author = "Andrew Hunt"),
                 )
                 every { repository.findAll() } returns books
 
                 useCase.getAllBooks() shouldContainExactly listOf(
-                    Book("Clean Code", "Robert C. Martin"),
-                    Book("Refactoring", "Martin Fowler"),
-                    Book("The Pragmatic Programmer", "Andrew Hunt"),
+                    Book(id = 2L, title = "Clean Code", author = "Robert C. Martin"),
+                    Book(id = 1L, title = "Refactoring", author = "Martin Fowler"),
+                    Book(id = 3L, title = "The Pragmatic Programmer", author = "Andrew Hunt"),
                 )
             }
 
             it("retourne la liste triée quand les livres sont déjà stockés dans l'ordre") {
                 val books = listOf(
-                    Book("A", "Author 1"),
-                    Book("B", "Author 2"),
-                    Book("C", "Author 3"),
+                    Book(id = 1L, title = "A", author = "Author 1"),
+                    Book(id = 2L, title = "B", author = "Author 2"),
+                    Book(id = 3L, title = "C", author = "Author 3"),
                 )
                 every { repository.findAll() } returns books
 
                 useCase.getAllBooks() shouldContainExactly books
+            }
+        }
+
+        // ── reserveBook ────────────────────────────────────────────────────
+        describe("reserveBook") {
+
+            it("réserve un livre disponible") {
+                val book = Book(id = 1L, title = "Clean Code", author = "Robert C. Martin", reserved = false)
+                every { repository.findById(1L) } returns book
+                every { repository.save(any()) } answers { firstArg() }
+
+                val reserved = useCase.reserveBook(1L)
+
+                reserved.reserved shouldBe true
+                verify(exactly = 1) { repository.save(book.copy(reserved = true)) }
+            }
+
+            it("lève une exception si le livre est déjà réservé") {
+                val book = Book(id = 1L, title = "Clean Code", author = "Robert C. Martin", reserved = true)
+                every { repository.findById(1L) } returns book
+
+                shouldThrow<IllegalStateException> {
+                    useCase.reserveBook(1L)
+                }
+                verify(exactly = 0) { repository.save(any()) }
+            }
+
+            it("lève une exception si le livre n'existe pas") {
+                every { repository.findById(42L) } returns null
+
+                shouldThrow<NoSuchElementException> {
+                    useCase.reserveBook(42L)
+                }
+                verify(exactly = 0) { repository.save(any()) }
             }
         }
 
@@ -130,7 +164,7 @@ class BookUseCaseTest : DescribeSpec({
 
             it("la liste retournée contient exactement tous les éléments stockés") {
                 checkAll(Arb.list(nonBlankString, 0..20)) { titles ->
-                    val stored = titles.map { Book(it, "Auteur") }
+                    val stored = titles.map { Book(title = it, author = "Auteur") }
                     every { repository.findAll() } returns stored
 
                     val result = useCase.getAllBooks()
@@ -142,7 +176,7 @@ class BookUseCaseTest : DescribeSpec({
 
             it("la liste retournée est triée par titre") {
                 checkAll(Arb.list(nonBlankString, 1..20)) { titles ->
-                    val stored = titles.map { Book(it, "Auteur") }
+                    val stored = titles.map { Book(title = it, author = "Auteur") }
                     every { repository.findAll() } returns stored
 
                     val result = useCase.getAllBooks()
@@ -154,7 +188,7 @@ class BookUseCaseTest : DescribeSpec({
             it("addBook avec titre et auteur non vides sauvegarde toujours le livre") {
                 checkAll(nonBlankString, nonBlankString) { title, author ->
                     io.mockk.clearMocks(repository)
-                    every { repository.save(any()) } returns Unit
+                    every { repository.save(any()) } answers { firstArg() }
 
                     useCase.addBook(title, author)
 

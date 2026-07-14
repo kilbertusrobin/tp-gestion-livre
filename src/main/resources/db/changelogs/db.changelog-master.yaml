@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelogs/001-create-table-book.yaml
+  - include:
+      file: db/changelogs/002-add-reserved-column-book.yaml
