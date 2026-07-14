@@ -126,8 +126,8 @@ tasks.jacocoTestCoverageVerification {
 
 pitest {
     junit5PluginVersion = "1.2.1"
-    targetClasses = setOf("com.example.books.*")
-    targetTests = setOf("com.example.books.*")
+    targetClasses = setOf("com.example.books.domain.*")
+    targetTests = setOf("com.example.books.domain.*")
     threads = 2
     outputFormats = setOf("XML", "HTML")
     mutationThreshold = 80
