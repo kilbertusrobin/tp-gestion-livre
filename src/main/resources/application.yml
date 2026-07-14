@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: books
+  datasource:
+    url: jdbc:postgresql://localhost:5432/books
+    username: books
+    password: books
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelogs/db.changelog-master.yaml
